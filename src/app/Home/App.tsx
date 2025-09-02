@@ -12,8 +12,10 @@ export default function App() {
                 <Text style={styles.buttonText}>+</Text>
             </TouchableOpacity>
             </View>
-            <Event/>
+            <Event name = "Evento Novo"></Event>
+            <Event name = "Evento Cancelado"></Event>
         </View>
+        
         
     )
 }
