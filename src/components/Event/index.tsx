@@ -1,18 +1,19 @@
-import { View, Text, TouchableOpacity } from "react-native"
-import { styles } from "./styles"
+import { View, Text, TouchableOpacity } from "react-native";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { styles } from "./styles";
 
-type Props ={
-    name:string,
+// Determinando a tipagem tipagem pro props
+type Props = {
+    name: string,
     onClick?: ()=>void
 }
 
-export function Event({name}:Props){
+
+export function Item({name}:Props){
     return(
         <View style={styles.container}>
-            <Text style={styles.text}>{name}</Text>
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>+</Text>
-            </TouchableOpacity>
+            <AntDesign name="checkcircle" size={18} color="#fff" />
+            <Text style={styles.text}>{name}</Text> 
         </View>
     )
 }
