@@ -6,7 +6,7 @@ import { useState } from 'react';
 import React from 'react';
 
 export default function App() {
-    const[count, setCount] = useState(0);
+    const[count, setCount] = useState(1);
     const[countTen, setCountTen] = useState(10);
     const[countHund, setCountHund] = useState(100);
 
