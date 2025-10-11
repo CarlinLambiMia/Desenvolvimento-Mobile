@@ -1,112 +1,103 @@
-import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
-import { styles } from "./styles";
 import React, { useState } from "react";
-import { Input } from "./src/components/Input";
-import { Itens } from "./src/components/Itens";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { styles } from "./styles";
+import { Input } from "./src/components/Input";
 
-type Produto = {
+type Alimento = {
   nome: string;
-  preco: number;
+  calorias: number;
 };
 
 export default function App() {
-  const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [produtoAdd, setProdutoAdd] = useState("");
-  const [precoAdd, setPrecoAdd] = useState("");
+  const [alimentos, setAlimentos] = useState<Alimento[]>([]);
+  const [alimentoAdd, setAlimentoAdd] = useState("");
+  const [caloriaAdd, setCaloriaAdd] = useState("");
 
-  function adicionarProduto() {
-    if (produtoAdd.trim() === "" || precoAdd.trim() === "") {
+  function adicionarAlimento() {
+    if (alimentoAdd.trim() === "" || caloriaAdd.trim() === "") {
       Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
-    const precoNumero = parseFloat(precoAdd.replace(",", "."));
-    if (isNaN(precoNumero)) {
-      Alert.alert("Erro", "Digite um valor numérico válido para o preço!");
+    const caloriasNumero = parseFloat(caloriaAdd.replace(",", "."));
+    if (isNaN(caloriasNumero)) {
+      Alert.alert("Erro", "Digite um valor válido para as calorias!");
       return;
     }
 
-    const novoProduto: Produto = {
-      nome: produtoAdd,
-      preco: precoNumero,
+    const novoAlimento: Alimento = {
+      nome: alimentoAdd,
+      calorias: caloriasNumero,
     };
 
-    setProdutos([...produtos, novoProduto]);
-    setProdutoAdd("");
-    setPrecoAdd("");
+    setAlimentos([...alimentos, novoAlimento]);
+    setAlimentoAdd("");
+    setCaloriaAdd("");
   }
 
-  function apagarItem(chave: number) {
-    setProdutos(produtos.filter((_, index) => index !== chave));
+  function removerAlimento(index: number) {
+    setAlimentos(alimentos.filter((_, i) => i !== index));
   }
 
-  const total = produtos.reduce((acc, item) => acc + item.preco, 0);
+  const totalCalorias = alimentos.reduce(
+    (acc, item) => acc + item.calorias,
+    0
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Lista de compras</Text>
+      <Text style={styles.titulo}>Calorias</Text>
 
-      {/* Inputs e botão lado a lado */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 20, marginTop: 30  }}>
-        <Input
-          placeH="Produto"
-          onChangeText={setProdutoAdd}
-          value={produtoAdd}
-          style={{ flex: 2 }}
-        />
-        <Input
-          placeH="Preço"
-          onChangeText={setPrecoAdd}
-          value={precoAdd}
-          keyboardType="numeric"
-          style={{ flex: 1 }}
-        />
-        <TouchableOpacity onPress={adicionarProduto}>
-          <AntDesign name="plus-circle" size={35} color="#4CAF50" />
+      {/* Inputs */}
+      <Input
+        placeH="Digite o alimento"
+        value={alimentoAdd}
+        onChangeText={setAlimentoAdd}
+      />
+      <Input
+        placeH="Digite as calorias"
+        value={caloriaAdd}
+        onChangeText={setCaloriaAdd}
+        keyboardType="numeric"
+      />
+
+      <TouchableOpacity style={styles.botaoAdd} onPress={adicionarAlimento}>
+        <Text style={styles.textoBotao}>Adicionar</Text>
+      </TouchableOpacity>
+
+      {/* Cabeçalho */}
+      <View style={styles.headerLista}>
+        <Text style={styles.headerItem}>Item</Text>
+        <Text style={styles.headerItem}>Calorias</Text>
+        <TouchableOpacity onPress={() => setAlimentos([])}>
+          <Text style={styles.limpar}>Limpar</Text>
         </TouchableOpacity>
       </View>
 
       {/* Lista */}
-      <View style={styles.containerList}>
-        <ScrollView>
-          {produtos.length === 0 ? (
-            <Text
-              style={{
-                display: "flex",
-                textAlign: "center",
-                color: "#F2EFEB",
-                marginTop: 150,
-                fontSize: 20,
-              }}
-            >
-              Não tem itens
-            </Text>
-          ) : (
-            produtos.map((item, index) => (
-              <Itens
-                key={index}
-                chave={index}
-                name={`${item.nome} - R$ ${item.preco.toFixed(2)}`}
-                onDelete={apagarItem}
-              />
-            ))
-          )}
-        </ScrollView>
-      </View>
+      <ScrollView style={styles.scroll}>
+        {alimentos.map((item, index) => (
+          <View key={index} style={styles.itemLista}>
+            <Text style={styles.nomeItem}>{item.nome}</Text>
+            <Text style={styles.caloriaItem}>{item.calorias} kcal</Text>
+            <TouchableOpacity onPress={() => removerAlimento(index)}>
+              <AntDesign name="delete" size={20} color="#999" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
 
       {/* Total */}
-      <Text
-        style={{
-          fontSize: 20,
-          marginTop: 20,
-          color: "#F2EFEB",
-          fontWeight: "bold",
-          textAlign: "center",
-        }}
-      >
-        Total: R$ {total.toFixed(2)}
-      </Text>
+      <View style={styles.totalBox}>
+        <Text style={styles.totalTexto}>{totalCalorias} kcal</Text>
+      </View>
     </View>
   );
 }

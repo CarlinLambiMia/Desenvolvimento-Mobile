@@ -1,22 +1,30 @@
-import { View, TextInput, TextInputProps, StyleProp, ViewStyle } from "react-native";
-import { styles } from "./styles";
+import React from "react";
+import { TextInput, TextInputProps, StyleSheet } from "react-native";
 
 type Props = TextInputProps & {
   placeH: string;
-  style?: StyleProp<ViewStyle>;
 };
 
-export function Input({ placeH, onChangeText, value, keyboardType, style }: Props) {
+export function Input({ placeH, style, ...rest }: Props) {
   return (
-    <View style={[styles.container, style]}>
-      <TextInput
-        style={styles.input}
-        placeholder={placeH}
-        placeholderTextColor="#888C81"
-        onChangeText={onChangeText}
-        value={value}
-        keyboardType={keyboardType}
-      />
-    </View>
+    <TextInput
+      placeholder={placeH}
+      placeholderTextColor="#999"
+      style={[styles.input, style]}
+      {...rest}
+    />
   );
 }
+
+const styles = StyleSheet.create({
+  input: {
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 10,
+    color: "#000",
+  },
+});
