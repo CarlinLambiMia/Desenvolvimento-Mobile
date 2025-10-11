@@ -1,64 +1,96 @@
-import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
-import { styles } from "./styles";
 import React, { useState } from "react";
-import { Input } from "./src/components/Input";
-import { Itens } from "./src/components/Itens";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { styles } from "./styles";
+import { Input } from "./src/components/Input";
 
 type Produto = {
   nome: string;
+  produtor: string;
   preco: number;
+  quantidade: number;
 };
 
 export default function App() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [produtoAdd, setProdutoAdd] = useState("");
+  const [nomeAdd, setNomeAdd] = useState("");
+  const [produtorAdd, setProdutorAdd] = useState("");
   const [precoAdd, setPrecoAdd] = useState("");
 
   function adicionarProduto() {
-    if (produtoAdd.trim() === "" || precoAdd.trim() === "") {
+    if (!nomeAdd.trim() || !produtorAdd.trim() || !precoAdd.trim()) {
       Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
     const precoNumero = parseFloat(precoAdd.replace(",", "."));
     if (isNaN(precoNumero)) {
-      Alert.alert("Erro", "Digite um valor numérico válido para o preço!");
+      Alert.alert("Erro", "Digite um valor válido para o preço!");
       return;
     }
 
     const novoProduto: Produto = {
-      nome: produtoAdd,
+      nome: nomeAdd,
+      produtor: produtorAdd,
       preco: precoNumero,
+      quantidade: 1,
     };
 
     setProdutos([...produtos, novoProduto]);
-    setProdutoAdd("");
+    setNomeAdd("");
+    setProdutorAdd("");
     setPrecoAdd("");
   }
 
-  function apagarItem(chave: number) {
-    setProdutos(produtos.filter((_, index) => index !== chave));
+  function alterarQuantidade(index: number, tipo: "mais" | "menos") {
+    const novaLista = produtos.map((item, i) => {
+      if (i === index) {
+        const novaQtd =
+          tipo === "mais"
+            ? item.quantidade + 1
+            : item.quantidade > 1
+            ? item.quantidade - 1
+            : 1;
+        return { ...item, quantidade: novaQtd };
+      }
+      return item;
+    });
+    setProdutos(novaLista);
   }
 
-  const total = produtos.reduce((acc, item) => acc + item.preco, 0);
+  function removerProduto(index: number) {
+    setProdutos(produtos.filter((_, i) => i !== index));
+  }
+
+  const totalProdutos = produtos.reduce(
+    (acc, item) => acc + item.preco * item.quantidade,
+    0
+  );
+  const taxaEntrega = 5;
+  const totalFinal = totalProdutos + taxaEntrega;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Lista de compras</Text>
+      <Text style={styles.titulo}>Carrinho de Compras</Text>
 
-      {/* Inputs e botão lado a lado */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 20, marginTop: 30  }}>
+      {/* Inputs */}
+      <View style={{ flexDirection: "row", gap: 10, marginVertical: 20 }}>
         <Input
           placeH="Produto"
-          onChangeText={setProdutoAdd}
-          value={produtoAdd}
+          value={nomeAdd}
+          onChangeText={setNomeAdd}
+          style={{ flex: 2 }}
+        />
+        <Input
+          placeH="Produtor"
+          value={produtorAdd}
+          onChangeText={setProdutorAdd}
           style={{ flex: 2 }}
         />
         <Input
           placeH="Preço"
-          onChangeText={setPrecoAdd}
           value={precoAdd}
+          onChangeText={setPrecoAdd}
           keyboardType="numeric"
           style={{ flex: 1 }}
         />
@@ -68,45 +100,90 @@ export default function App() {
       </View>
 
       {/* Lista */}
-      <View style={styles.containerList}>
-        <ScrollView>
-          {produtos.length === 0 ? (
-            <Text
+      <ScrollView style={{ flex: 1, width: "100%" }}>
+        {produtos.map((item, index) => (
+          <View
+            key={index}
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 10,
+              marginBottom: 10,
+              padding: 10,
+            }}
+          >
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+              {item.nome}
+            </Text>
+            <Text style={{ color: "#555" }}>{item.produtor}</Text>
+
+            <View
               style={{
-                display: "flex",
-                textAlign: "center",
-                color: "#F2EFEB",
-                marginTop: 150,
-                fontSize: 20,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: 8,
               }}
             >
-              Não tem itens
-            </Text>
-          ) : (
-            produtos.map((item, index) => (
-              <Itens
-                key={index}
-                chave={index}
-                name={`${item.nome} - R$ ${item.preco.toFixed(2)}`}
-                onDelete={apagarItem}
-              />
-            ))
-          )}
-        </ScrollView>
-      </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <TouchableOpacity
+                  onPress={() => alterarQuantidade(index, "menos")}
+                >
+                  <AntDesign name="minus-circle" size={22} color="#E53935" />
+                </TouchableOpacity>
+                <Text
+                  style={{
+                    marginHorizontal: 10,
+                    fontSize: 18,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.quantidade}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => alterarQuantidade(index, "mais")}
+                >
+                  <AntDesign name="plus-circle" size={22} color="#4CAF50" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                R$ {(item.preco * item.quantidade).toFixed(2)}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => removerProduto(index)}
+              style={{ marginTop: 5 }}
+            >
+              <Text style={{ color: "#E53935", textAlign: "right" }}>Remover</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
 
       {/* Total */}
-      <Text
+      <View
         style={{
-          fontSize: 20,
-          marginTop: 20,
-          color: "#F2EFEB",
-          fontWeight: "bold",
-          textAlign: "center",
+          marginTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: "#ccc",
+          paddingTop: 10,
         }}
       >
-        Total: R$ {total.toFixed(2)}
-      </Text>
+        <Text style={{ fontSize: 16, color: "#444" }}>
+          Taxa de entrega: R$ {taxaEntrega.toFixed(2)}
+        </Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginTop: 5,
+            color: "#000",
+          }}
+        >
+          Total do pedido: R$ {totalFinal.toFixed(2)}
+        </Text>
+      </View>
     </View>
   );
 }
